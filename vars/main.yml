@@ -1,0 +1,24 @@
+---
+unbound_uci_config_main_default:
+  add_local_fqdn: 1
+  protocol: default
+  recursion: default
+  resource: default
+unbound_uci_root_zone:
+  fallback: true
+  url_dir: 'https://www.internic.net/domain/'
+  zone_type: auth_zone
+  server:
+    - lax.xfr.dns.icann.org
+    - iad.xfr.dns.icann.org
+  zone_name:
+    - .
+    - arpa.
+    - in-addr.arpa.
+    - ip6.arpa.
+unbound_manual_options:
+  server:
+    username: unbound
+    chroot: '/var/lib/unbound'
+    directory: '/var/lib/unbound'
+    pidfile: '/var/run/unbound.pid'

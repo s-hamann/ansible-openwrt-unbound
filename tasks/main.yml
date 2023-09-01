@@ -1,0 +1,65 @@
+---
+- name: 'Set required options for odhcpd link'
+  ansible.builtin.set_fact:
+    unbound_control: true
+    unbound_uci_config_main: "{{ unbound_uci_config_main | combine({'unbound_control': 1}) }}"
+  when: "unbound_uci_config_main['dhcp_link'] | default('none') == 'odhcpd' and not unbound_uci_config_main['manual_conf'] | default(false)"
+
+- name: 'Install Unbound'
+  community.general.opkg:
+    name: unbound-daemon
+    state: present
+
+- name: 'Install unbound-control'
+  community.general.opkg:
+    name: unbound-control
+    state: present
+  when: "unbound_control | bool"
+
+- name: 'Install LuCI-integration for Unbound'
+  community.general.opkg:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | flatten }}"
+  when: "unbound_luci | bool"
+
+- name: 'Add root zone to UCI zone configuration'
+  ansible.builtin.set_fact:
+    unbound_uci_config_zones: "{{ {'auth_icann': unbound_uci_root_zone} | combine(unbound_uci_config_zones) }}"
+  when: "unbound_prefetch_root_zone | bool"
+
+- name: 'Configure Unbound'
+  ansible.builtin.template:
+    dest: "{{ item['dest'] }}"
+    src: "{{ item['src'] }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop:
+    - src: unbound.j2
+      dest: '/etc/config/unbound'
+    - src: unbound.conf.j2
+      dest: '/etc/unbound/unbound.conf'
+      config: "{{ unbound_manual_options | combine(unbound_extra_options, recursive=true) }}"
+      when: "{{ unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+    - src: unbound.conf.j2
+      dest: '/etc/unbound/unbound_srv.conf'
+      config:
+        server: "{{ unbound_extra_options['server'] | default({}) }}"
+      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+    - src: unbound.conf.j2
+      dest: '/etc/unbound/unbound_ext.conf'
+      config: "{{ unbound_extra_options | ansible.utils.remove_keys(target=['server']) }}"
+      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+  loop_control:
+    label: "{{ item['dest'] }}"
+  vars:
+    _unbound_config: "{{ item['config'] | default({}) }}"
+  notify: _unbound_restart
+  when: "item.when | default(true) | bool"
+
+- name: 'Enable and start Unbound'
+  ansible.builtin.service:
+    name: unbound
+    enabled: true
+    state: "{{ ansible_facts['is_chroot'] | ternary(omit, 'started') }}"

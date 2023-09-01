@@ -1,0 +1,7 @@
+---
+unbound_luci: true
+unbound_luci_i18n: []
+unbound_uci_config_main: {}
+unbound_uci_config_zones: {}
+unbound_prefetch_root_zone: true
+unbound_control: false
