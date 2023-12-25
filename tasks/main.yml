@@ -2,7 +2,7 @@
 - name: 'Set required options for odhcpd link'
   ansible.builtin.set_fact:
     unbound_control: true
-    unbound_uci_config_main: "{{ unbound_uci_config_main | combine({'unbound_control': 1}) }}"
+    unbound_uci_config_main: "{{ unbound_uci_config_main | ansible.builtin.combine({'unbound_control': 1}) }}"
   when: "unbound_uci_config_main['dhcp_link'] | default('none') == 'odhcpd' and not unbound_uci_config_main['manual_conf'] | default(false)"
 
 - name: 'Install Unbound'
@@ -20,12 +20,12 @@
   community.general.opkg:
     name: "{{ item }}"
     state: present
-  loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | flatten }}"
+  loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | ansible.builtin.flatten }}"
   when: "unbound_luci | bool"
 
 - name: 'Add root zone to UCI zone configuration'
   ansible.builtin.set_fact:
-    unbound_uci_config_zones: "{{ {'auth_icann': unbound_uci_root_zone} | combine(unbound_uci_config_zones) }}"
+    unbound_uci_config_zones: "{{ {'auth_icann': unbound_uci_root_zone} | ansible.builtin.combine(unbound_uci_config_zones) }}"
   when: "unbound_prefetch_root_zone | bool"
 
 - name: 'Configure Unbound'
@@ -40,7 +40,7 @@
       dest: '/etc/config/unbound'
     - src: unbound.conf.j2
       dest: '/etc/unbound/unbound.conf'
-      config: "{{ unbound_manual_options | combine(unbound_extra_options, recursive=true) }}"
+      config: "{{ unbound_manual_options | ansible.builtin.combine(unbound_extra_options, recursive=true) }}"
       when: "{{ unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
     - src: unbound.conf.j2
       dest: '/etc/unbound/unbound_srv.conf'
@@ -62,4 +62,4 @@
   ansible.builtin.service:
     name: unbound
     enabled: true
-    state: "{{ ansible_facts['is_chroot'] | ternary(omit, 'started') }}"
+    state: "{{ ansible_facts['is_chroot'] | ansible.builtin.ternary(omit, 'started') }}"

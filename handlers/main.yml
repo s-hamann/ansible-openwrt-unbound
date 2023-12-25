@@ -2,5 +2,5 @@
 - name: 'Restart Unbound'
   ansible.builtin.service:
     name: unbound
-    state: "{{ ansible_facts['is_chroot'] | ternary(omit, 'reloaded') }}"
+    state: "{{ ansible_facts['is_chroot'] | ansible.builtin.ternary(omit, 'reloaded') }}"
   listen: _unbound_restart

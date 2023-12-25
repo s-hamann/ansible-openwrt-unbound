@@ -1,5 +1,5 @@
 #jinja2: lstrip_blocks: True
-{{ ansible_managed | comment }}
+{{ ansible_managed | ansible.builtin.comment }}
 
 {% macro uci_block(uci_options) %}
   {% for key, value in uci_options.items() if value != omit %}
@@ -8,13 +8,13 @@
 	list {{ key }} '{{ item }}'
       {% endfor %}
     {% else %}
-	option {{ key }} '{% if value is boolean %}{{ value | ternary('1', '0') }}{% else %}{{ value }}{% endif %}'
+	option {{ key }} '{% if value is boolean %}{{ value | ansible.builtin.ternary('1', '0') }}{% else %}{{ value }}{% endif %}'
     {% endif %}
   {% endfor %}
 {% endmacro %}
 config unbound 'ub_main'
-{{ uci_block(unbound_uci_config_main_default | combine(unbound_uci_config_main)) }}
+{{ uci_block(unbound_uci_config_main_default | ansible.builtin.combine(unbound_uci_config_main)) }}
 {% for name, options in unbound_uci_config_zones.items() %}
 config zone '{{ name }}'
-{{ uci_block({'enabled': true} | combine(options)) }}
+{{ uci_block({'enabled': true} | ansible.builtin.combine(options)) }}
 {% endfor %}

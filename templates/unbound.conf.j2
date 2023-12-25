@@ -1,6 +1,6 @@
 #jinja2: lstrip_blocks: True
 {# vim: filetype=conf.jinja2 #}
-{{ ansible_managed | comment }}
+{{ ansible_managed | ansible.builtin.comment }}
 
 {% macro print_option(key, value) %}
   {% if value is sequence and value is not string %}
@@ -8,7 +8,7 @@
 {{ print_option(key, v) }}{# #}
     {% endfor %}
   {% elif value is boolean %}
-{{ key }}: {{ value | ternary('yes', 'no') }}
+{{ key }}: {{ value | ansible.builtin.ternary('yes', 'no') }}
   {% elif value is string and ' ' in value and '"' not in value %}
 {{ key }}: "{{ value }}"
   {% else %}
@@ -16,17 +16,17 @@
   {% endif %}
 {% endmacro %}
 {% for clause, options in _unbound_config.items() %}
-{{ clause | regex_replace('\s.*$', '') }}:
+{{ clause | ansible.builtin.regex_replace('\s.*$', '') }}:
   {% for key, value in options.items() if value != omit %}
 {{ print_option(key, value) | indent(2, true) }}{# #}
     {# Set up PTR records for A/AAAA records. #}
     {% if key == 'local-data' %}
       {% for record in [value] | flatten %}
-        {% set ptr = (record | regex_replace('(?P<hostname>\S+)\.\s+(?P<ttl>[0-9]+)?\s*(?:IN)?\s*(?:A|AAAA)\s+(?P<ip>[0-9.:]+)', '\g<ip> \g<ttl> \g<hostname>')) %}
+        {% set ptr = (record | ansible.builtin.regex_replace('(?P<hostname>\S+)\.\s+(?P<ttl>[0-9]+)?\s*(?:IN)?\s*(?:A|AAAA)\s+(?P<ip>[0-9.:]+)', '\g<ip> \g<ttl> \g<hostname>')) %}
         {# Check that the regex actually matched. #}
         {% if ptr != record %}
           {# Check that there is no manually configured PTR record for this hostname. #}
-          {% if [options['local-data-ptr'] | default([])] | flatten | select('regex', '\s' ~ ptr.split()[2] ~ '$') | count == 0 %}
+          {% if [options['local-data-ptr'] | default([])] | ansible.builtin.flatten | select('regex', '\s' ~ ptr.split()[2] ~ '$') | count == 0 %}
   local-data-ptr: "{{ ptr }}"
           {% endif %}
         {% endif %}
