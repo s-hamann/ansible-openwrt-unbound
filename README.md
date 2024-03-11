@@ -6,9 +6,9 @@ This role configures [Unbound](https://unbound.net/) as a DNS resolver and/or DN
 Requirements
 ------------
 
-This role has no special requirements on the controller.
+This role requires the `ansible.utils` collection and the [netaddr](https://github.com/netaddr/netaddr/) Python package on the Ansible controller.
 
-It does, however, require a working [Python](https://www.python.org/) installation on the target system or [gekmihesg's Ansible library for OpenWrt](https://github.com/gekmihesg/ansible-openwrt) on the Ansible controller.
+Moreover, it requires a working [Python](https://www.python.org/) installation on the target system or [gekmihesg's Ansible library for OpenWrt](https://github.com/gekmihesg/ansible-openwrt) on the Ansible controller.
 
 Role Variables
 --------------
