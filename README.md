@@ -46,6 +46,10 @@ Role Variables
   If `manual_conf` is enabled in `unbound_uci_config_main`, a few recommended settings are added to this and the configuration is written to `/etc/unbound/unbound.conf`.
   Otherwise, the configuration is split between `/etc/unbound/unbound_srv.conf` and `/etc/unbound/unbound_ext.conf`.
   Optional.
+* `unbound_control`  
+  Whether to install unbound-control.
+  Default is `false`.
+  This option is automatically enabled when Unbound is configured to link with odhcpd.
 
 Dependencies
 ------------
