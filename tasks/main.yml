@@ -14,19 +14,19 @@
   community.openwrt.apk:
     name: unbound-control
     state: present
-  when: "unbound_control | bool"
+  when: "unbound_control | ansible.builtin.bool"
 
 - name: 'Install LuCI-integration for Unbound'
   community.openwrt.apk:
     name: "{{ item }}"
     state: present
-  loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | ansible.builtin.flatten }}"
-  when: "unbound_luci | bool"
+  loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('ansible.builtin.regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | ansible.builtin.flatten }}"
+  when: "unbound_luci | ansible.builtin.bool"
 
 - name: 'Add root zone to UCI zone configuration'
   ansible.builtin.set_fact:
     unbound_uci_config_zones: "{{ {'auth_icann': unbound_uci_root_zone} | ansible.builtin.combine(unbound_uci_config_zones) }}"
-  when: "unbound_prefetch_root_zone | bool"
+  when: "unbound_prefetch_root_zone | ansible.builtin.bool"
 
 - name: 'Configure Unbound'
   community.openwrt.template:
@@ -41,22 +41,22 @@
     - src: unbound.conf.j2
       dest: '/etc/unbound/unbound.conf'
       config: "{{ unbound_manual_options | ansible.builtin.combine(unbound_extra_options, recursive=true) }}"
-      when: "{{ unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+      when: "{{ unbound_uci_config_main['manual_conf'] | default(false) | ansible.builtin.bool }}"
     - src: unbound.conf.j2
       dest: '/etc/unbound/unbound_srv.conf'
       config:
         server: "{{ unbound_extra_options['server'] | default({}) }}"
-      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | ansible.builtin.bool }}"
     - src: unbound.conf.j2
       dest: '/etc/unbound/unbound_ext.conf'
       config: "{{ unbound_extra_options | ansible.utils.remove_keys(target=['server']) }}"
-      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | bool }}"
+      when: "{{ not unbound_uci_config_main['manual_conf'] | default(false) | ansible.builtin.bool }}"
   loop_control:
     label: "{{ item['dest'] }}"
   vars:
     _unbound_config: "{{ item['config'] | default({}) }}"
   notify: _unbound_restart
-  when: "item.when | default(true) | bool"
+  when: "item.when | default(true) | ansible.builtin.bool"
 
 - name: 'Enable and start Unbound'
   community.openwrt.service:
