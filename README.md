@@ -6,9 +6,9 @@ This role configures [Unbound](https://unbound.net/) as a DNS resolver and/or DN
 Requirements
 ------------
 
-This role requires the `ansible.utils` collection and the [netaddr](https://github.com/netaddr/netaddr/) Python package on the Ansible controller.
-
-Moreover, it requires a working [Python](https://www.python.org/) installation on the target system or [gekmihesg's Ansible library for OpenWrt](https://github.com/gekmihesg/ansible-openwrt) on the Ansible controller.
+This role requires the [ansible.utils](https://github.com/ansible-collections/ansible.utils) and the [community.openwrt](https://github.com/ansible-collections/community.openwrt) collection on the Ansible controller.
+As it exclusively uses modules from this collection, Python is *not* required on the target system.
+The [netaddr](https://github.com/netaddr/netaddr/) Python package must be installed on the Ansible controller.
 
 Role Variables
 --------------
@@ -59,6 +59,8 @@ This role does not depend on any specific roles.
 However, it is to note that this role only handles Unbound.
 In the default setup, Unbound conflicts with Dnsmasq, since they would both bind to UDP port 53.
 It is the responsibility of another role to reconfigure or disable Dnsmasq, if Unbound is set to use this port.
+
+This role only works on OpenWrt 25.12 and newer.
 
 Example Configuration
 ---------------------

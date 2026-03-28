@@ -6,18 +6,18 @@
   when: "unbound_uci_config_main['dhcp_link'] | default('none') == 'odhcpd' and not unbound_uci_config_main['manual_conf'] | default(false)"
 
 - name: 'Install Unbound'
-  community.general.opkg:
+  community.openwrt.apk:
     name: unbound-daemon
     state: present
 
 - name: 'Install unbound-control'
-  community.general.opkg:
+  community.openwrt.apk:
     name: unbound-control
     state: present
   when: "unbound_control | bool"
 
 - name: 'Install LuCI-integration for Unbound'
-  community.general.opkg:
+  community.openwrt.apk:
     name: "{{ item }}"
     state: present
   loop: "{{ ['luci-app-unbound'] + [unbound_luci_i18n | map('regex_replace', '(\\S+)', 'luci-i18n-unbound-\\1')] | ansible.builtin.flatten }}"
@@ -29,7 +29,7 @@
   when: "unbound_prefetch_root_zone | bool"
 
 - name: 'Configure Unbound'
-  ansible.builtin.template:
+  community.openwrt.template:
     dest: "{{ item['dest'] }}"
     src: "{{ item['src'] }}"
     owner: root
@@ -59,7 +59,7 @@
   when: "item.when | default(true) | bool"
 
 - name: 'Enable and start Unbound'
-  ansible.builtin.service:
+  community.openwrt.service:
     name: unbound
     enabled: true
     state: "{{ ansible_facts['is_chroot'] | ansible.builtin.ternary(omit, 'started') }}"
